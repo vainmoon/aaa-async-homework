@@ -15,17 +15,20 @@ class BackgroundCoroutinesWatcher:
         self._running_tasks: Set[asyncio.Task] = set()
 
     def schedule_soon(self, coro: Coroutine):
-        # Здесь необходимо реализовать логику планирования корутины.
-        #
-        # YOUR CODE GOES HERE
+        task = asyncio.create_task(coro)
+        self._running_tasks.add(task)
+        task.add_done_callback(self._remove_from_running_task)
 
     def _remove_from_running_task(self, task: asyncio.Task) -> None:
         self._running_tasks.remove(task)
 
     async def close(self):
         # Здесь необходимо реализовать отмену корутин, которые ещё не успели завершиться.
-        #
-        # YOUR CODE GOES HERE
+        close_task = set(self._running_tasks)
+        for task in close_task:
+            if not task.done():
+                self._remove_from_running_task(task)
+                task.cancel()
 
 
 class FastHandlerWithLongBackgroundTask:
